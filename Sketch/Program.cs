@@ -1,4 +1,5 @@
 ﻿using Sketch.BootstrapAPI;
+using Sketch.DebugExercises;
 using Sketch.DasherPayout;
 
 namespace Sketch;
@@ -62,5 +63,10 @@ internal class Program
 
         // ── Bootstrap API ──
         await BootstrapMain.RunAsync();
+
+        Console.WriteLine("\n");
+
+        // ── Debug Exercises ──
+        DebugExercisesMain.Run();
     }
 }
