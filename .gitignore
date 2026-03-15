@@ -4,6 +4,7 @@
 
 
 # Javaa IDE & build artifacts
+*.class
 /Javaa/.idea/
 /Javaa/.vscode/
 /Javaa/out/
