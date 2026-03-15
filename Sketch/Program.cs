@@ -21,7 +21,7 @@ internal class Program
             new() { Timestamp = "10:30", OrderId = "B", EventType = "fulfilled" },
         };
         decimal payout1 = part1.CalculatePayout(activities1, basePay);
-        Console.WriteLine($"final pay: {payout1:C}\n");
+        //Console.WriteLine($"final pay: {payout1:C}\n");
 
         // ── Part 2: At-Store Pausing ──
         Console.WriteLine("=== Part 2: At-Store Pausing ===");
@@ -38,7 +38,7 @@ internal class Program
             new() { Timestamp = "10:50", OrderId = "B", EventType = "fulfilled" },
         };
         decimal payout2 = part2.CalculatePayout(activities2, basePay);
-        Console.WriteLine($"final pay: {payout2:C}\n");
+       // Console.WriteLine($"final pay: {payout2:C}\n");
 
         // ── Part 3: Peak Hour Multiplier ──
         Console.WriteLine("=== Part 3: Peak Hour Multiplier ===");
@@ -57,12 +57,12 @@ internal class Program
             (TimeSpan.Parse("10:15"), TimeSpan.Parse("10:30"))
         };
         decimal payout3 = part3.CalculatePayout(activities3, basePay, peakWindows);
-        Console.WriteLine($"final pay: {payout3:C}");
+      //  Console.WriteLine($"final pay: {payout3:C}");
 
         Console.WriteLine("\n");
 
         // ── Bootstrap API ──
-        await BootstrapMain.RunAsync();
+     //   await BootstrapMain.RunAsync();
 
         Console.WriteLine("\n");
 

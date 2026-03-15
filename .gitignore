@@ -1,3 +1,24 @@
 /.vs
 /Sketch/bin
 /Sketch/obj
+
+
+# Javaa IDE & build artifacts
+/Javaa/.idea/
+/Javaa/.vscode/
+/Javaa/out/
+/Javaa/bin/
+/Javaa/.kotlin/
+/Javaa/.classpath
+/Javaa/.factorypath
+/Javaa/.project
+/Javaa/.settings/
+/Javaa/.springBeans
+/Javaa/.sts4-cache
+/Javaa/.apt_generated
+/Javaa/.DS_Store
+/Javaa/nbproject/private/
+/Javaa/nbbuild/
+/Javaa/dist/
+/Javaa/nbdist/
+/Javaa/.nb-gradle/

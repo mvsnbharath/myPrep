@@ -30,7 +30,9 @@ public class InMemoryCache<TKey, TValue>
     public void Set(TKey key, TValue value, TimeSpan? ttl = null)
     {
         if (_store.Count >= _maxSize && !_store.ContainsKey(key))
+        {
             Evict();
+        }
 
         var expiry = DateTime.UtcNow + (ttl ?? _defaultTtl);
         _store[key] = new CacheEntry { Value = value, ExpiresAt = expiry };
@@ -40,7 +42,9 @@ public class InMemoryCache<TKey, TValue>
     public TValue? Get(TKey key)
     {
         if (!_store.TryGetValue(key, out var entry))
+        {
             return null;
+        }
 
         if (IsExpired(entry))
         {
@@ -58,14 +62,15 @@ public class InMemoryCache<TKey, TValue>
 
     private bool IsExpired(CacheEntry entry)
     {
-        return entry.ExpiresAt > DateTime.UtcNow;
+        return entry.ExpiresAt < DateTime.UtcNow;
     }
 
     private void Evict()
     {
         if (_evictionOrder.Count > 0)
         {
-            _evictionOrder.Dequeue();
+            TKey key = _evictionOrder.Dequeue();
+            _store.Remove(key);
         }
     }
 }

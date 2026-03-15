@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 namespace Sketch.DebugExercises;
 
 public class Node
@@ -26,6 +28,9 @@ public class NodeSelector
 
     public NodeSelector(List<Node> nodes)
     {
+        this._currentIndex = 0;
+
+
         _nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));
         if (nodes.Count == 0)
             throw new ArgumentException("Node list cannot be empty.", nameof(nodes));
@@ -33,17 +38,18 @@ public class NodeSelector
 
     public Node? PickNode()
     {
-        int _currentIndex = 0;
+
 
         for (int i = 0; i < _nodes.Count; i++)
         {
             int index = _currentIndex % _nodes.Count;
-            _currentIndex++;
-
-            if (_nodes[index].Status == "Available")
+            this._currentIndex++;
+            Console.WriteLine($"{_nodes[index].Status}");
+            if (_nodes[index].Status == "available")
                 return _nodes[index];
         }
 
-        return null;
+        throw new InvalidOperationException("All unavailable throws InvalidOperationException");
+
     }
 }

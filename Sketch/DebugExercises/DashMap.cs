@@ -44,6 +44,18 @@ public class DashMap<TKey, TValue> where TKey : notnull
             Resize();
 
         int index = GetBucketIndex(key);
+        var entry = _buckets[index];
+
+        while (entry != null)
+        {
+            if (entry.Key.Equals(key))
+            {
+                entry.Value = value;
+                return;
+            }
+            entry = entry.Next;
+        }
+
         var newEntry = new Entry(key, value);
         newEntry.Next = _buckets[index];
         _buckets[index] = newEntry;
@@ -55,8 +67,14 @@ public class DashMap<TKey, TValue> where TKey : notnull
         int index = GetBucketIndex(key);
         var entry = _buckets[index];
 
-        if (entry != null && entry.Key.Equals(key))
-            return entry.Value;
+        while (entry != null)
+        {
+            if (entry.Key.Equals(key))
+            {
+                return entry.Value;
+            }
+            entry = entry.Next;
+        }
 
         throw new KeyNotFoundException($"Key '{key}' not found.");
     }
@@ -85,6 +103,7 @@ public class DashMap<TKey, TValue> where TKey : notnull
         {
             if (current.Key.Equals(key))
             {
+                _count--;
                 if (prev == null)
                     _buckets[index] = current.Next;
                 else
@@ -104,7 +123,15 @@ public class DashMap<TKey, TValue> where TKey : notnull
 
         for (int i = 0; i < _capacity; i++)
         {
-            newBuckets[i] = _buckets[i];
+            var entry = _buckets[i];
+            while (entry != null)
+            {
+                var next = entry.Next;  // save next before overwriting
+                int newIndex = Math.Abs(entry.Key.GetHashCode()) % newCapacity;
+                entry.Next = newBuckets[newIndex];  // prepend to new bucket chain
+                newBuckets[newIndex] = entry;
+                entry = next;
+            }
         }
 
         _capacity = newCapacity;
