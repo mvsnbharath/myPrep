@@ -3,6 +3,7 @@ import java.util.*;
 public class RoundRobinBalancer {
     private final List<String> backends;
     private final Set<String> unhealthy;
+
     private int current;
 
     public RoundRobinBalancer(List<String> backends) {
@@ -16,16 +17,16 @@ public class RoundRobinBalancer {
      * Skips unhealthy backends. Returns null if all are unhealthy or list is empty.
      */
     public String getNext() {
-        if (backends.isEmpty()) {
+        if (this.backends.isEmpty()) {
             return null;
         }
 
-        int n = backends.size();
-        for (int i = 0; i < n - 1; i++) {
-            int idx = (current + i) % n;
+        int n = this.backends.size();
+        for (int i = 0; i <= n - 1; i++) {
+            int idx = (this.current) % n;
             String backend = backends.get(idx);
-            if (!unhealthy.contains(backend)) {
-                current = idx;
+            if (!this.unhealthy.contains(backend)) {
+                this.current = idx+1;
                 return backend;
             }
         }
@@ -33,10 +34,13 @@ public class RoundRobinBalancer {
     }
 
     public void markUnhealthy(String backend) {
-        unhealthy.add(backend);
+        this.unhealthy.add(backend);
+        int index = this.backends.indexOf(backend);
+        this.backends.remove(index);
     }
 
     public void markHealthy(String backend) {
-        unhealthy.remove(backend);
+        this.unhealthy.remove(backend);
+        this.backends.add(backend);
     }
 }
