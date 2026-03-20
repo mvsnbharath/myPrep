@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 // --- Shared Domain Models ---
@@ -316,6 +317,44 @@ class PaymentCalculatorV3 {
     }
 }
 
+// --- JSON Parser (using org.json) ---
+// Input is a raw JSON string. org.json deserializes it into JSONArray/JSONObject.
+
+class InputConverter {
+
+    private static final Map<String, ActivityType> TYPE_MAP = Map.of(
+            "accepted",           ActivityType.ORDER_ACCEPTED,
+            "arrived_at_pickup",  ActivityType.ORDER_ARRIVED_AT_PICKUP,
+            "picked_up",          ActivityType.PICKED_UP,
+            "fulfilled",          ActivityType.ORDER_FULFILLED
+    );
+
+    public static List<OrderActivity> parseActivities(String json) {
+        List<OrderActivity> result = new ArrayList<>();
+        org.json.JSONArray arr = new org.json.JSONArray(json);
+        for (int i = 0; i < arr.length(); i++) {
+            org.json.JSONObject obj = arr.getJSONObject(i);
+            String ts   = obj.getString("timestamp");
+            String id   = obj.getString("orderId");
+            String type = obj.getString("eventType");
+            result.add(new OrderActivity(TYPE_MAP.get(type), id, ts));
+        }
+        return result;
+    }
+
+    public static List<PeakWindow> parsePeakWindows(String json) {
+        List<PeakWindow> result = new ArrayList<>();
+        org.json.JSONArray arr = new org.json.JSONArray(json);
+        for (int i = 0; i < arr.length(); i++) {
+            org.json.JSONObject obj = arr.getJSONObject(i);
+            String start = obj.getString("start");
+            String end   = obj.getString("end");
+            result.add(new PeakWindow(LocalTime.parse(start), LocalTime.parse(end)));
+        }
+        return result;
+    }
+}
+
 // --- Main ---
 
 public class Main {
@@ -367,6 +406,31 @@ public class Main {
 
         PaymentCalculatorV3 v3 = new PaymentCalculatorV3(List.of(new BasePayRuleV3(), new PeakPayRuleV3()));
         System.out.printf("Part 3 — Final Payment: $%.2f%n", v3.calculate(ex3, peakWindows));
+        // Expected: $45.00
+
+        // ============ Part 3 (from raw JSON string) — Same Example 3 ============
+        String json = """
+                [
+                  {"timestamp": "10:00", "orderId": "A", "eventType": "accepted"},
+                  {"timestamp": "10:10", "orderId": "B", "eventType": "accepted"},
+                  {"timestamp": "10:15", "orderId": "A", "eventType": "arrived_at_pickup"},
+                  {"timestamp": "10:20", "orderId": "A", "eventType": "picked_up"},
+                  {"timestamp": "10:25", "orderId": "B", "eventType": "arrived_at_pickup"},
+                  {"timestamp": "10:30", "orderId": "B", "eventType": "picked_up"},
+                  {"timestamp": "10:40", "orderId": "A", "eventType": "fulfilled"},
+                  {"timestamp": "10:50", "orderId": "B", "eventType": "fulfilled"}
+                ]
+                """;
+
+        String peakJson = """
+                [{"start": "10:15", "end": "10:30"}]
+                """;
+
+        List<OrderActivity> parsed = InputConverter.parseActivities(json);
+        List<PeakWindow> parsedPeaks = InputConverter.parsePeakWindows(peakJson);
+
+        PaymentCalculatorV3 v3json = new PaymentCalculatorV3(List.of(new BasePayRuleV3(), new PeakPayRuleV3()));
+        System.out.printf("Part 3 (JSON) — Final Payment: $%.2f%n", v3json.calculate(parsed, parsedPeaks));
         // Expected: $45.00
     }
 }
