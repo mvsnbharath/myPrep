@@ -23,12 +23,15 @@ public class RoundRobinLoadBalancer {
         Server candidate = null;
 
         do {
-            currentIndex = (currentIndex + 1) % size;
+            currentIndex = currentIndex % size;
             candidate = servers.get(currentIndex);
             attempts++;
+            currentIndex++;
         } while (!candidate.isHealthy() && attempts < size);
 
-        return candidate;
+//        System.out.println("Candidate "+ candidate.getAddress());
+
+        return candidate.isHealthy()? candidate: null;
     }
 
     /**
@@ -36,7 +39,7 @@ public class RoundRobinLoadBalancer {
      */
     public void markServerDown(String address) {
         for (Server server : servers) {
-            if (server.getAddress() == address) {
+            if (server.getAddress().equals(address)) {
                 server.setHealthy(false);
                 return;
             }

@@ -26,7 +26,7 @@ public class Main {
         }
     }
 
-    // ── Test 1: servers should be returned in round-robin order ──
+//     ── Test 1: servers should be returned in round-robin order ──
     static void testBasicRoundRobin() {
         System.out.println("[testBasicRoundRobin]");
         List<Server> servers = new ArrayList<>(Arrays.asList(
