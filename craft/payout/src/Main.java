@@ -2,12 +2,13 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 enum ActivityType {
     ORDER_ACCEPTED,
+    ORDER_ARRIVED_AT_PICKUP,
+    PICKED_UP,
     ORDER_FULFILLED
 }
 
@@ -15,6 +16,7 @@ class OrderActivity {
     private final ActivityType activityType;
     private final String orderId;
     private final LocalTime datetime;
+
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
     public OrderActivity(ActivityType activityType, String orderId, String datetime) {
@@ -71,15 +73,19 @@ class PaymentCalculator {
     public BigDecimal finalPayment(List<OrderActivity> activities) {
         BigDecimal total = BigDecimal.ZERO;
         HashSet<String> activeOrders = new HashSet<>();
+        HashSet<String> atStoreOrders = new HashSet<>();
 
         for (int i = 0; i < activities.size(); i++) {
             OrderActivity activity = activities.get(i);
 
             if (i > 0) {
+
+                int activeOrderCount =  activeOrders.isEmpty() ? 0: Math.max(1, activeOrders.size()-atStoreOrders.size());
+
                 IntervalContext intervalContext = new IntervalContext(
                         activities.get(i - 1).getDatetime(),
                         activity.getDatetime(),
-                        activeOrders.size());
+                        activeOrderCount);
 
                 for (PaymentRule rule : paymentRules) {
                     total = total.add(rule.calculate(intervalContext));
@@ -88,6 +94,8 @@ class PaymentCalculator {
 
             switch (activity.getActivityType()) {
                 case ORDER_ACCEPTED -> activeOrders.add(activity.getOrderId());
+                case  ORDER_ARRIVED_AT_PICKUP -> atStoreOrders.add(activity.getOrderId());
+                case  PICKED_UP -> atStoreOrders.remove((activity.getOrderId()));
                 case ORDER_FULFILLED -> activeOrders.remove(activity.getOrderId());
             }
         }
@@ -101,12 +109,17 @@ public class Main {
         List<OrderActivity> activities = List.of(
                 new OrderActivity(ActivityType.ORDER_ACCEPTED, "A", "10:00"),
                 new OrderActivity(ActivityType.ORDER_ACCEPTED, "B", "10:10"),
-                new OrderActivity(ActivityType.ORDER_FULFILLED, "A", "10:20"),
-                new OrderActivity(ActivityType.ORDER_FULFILLED, "B", "10:30")
+                new OrderActivity(ActivityType.ORDER_ARRIVED_AT_PICKUP, "A", "10:15"),
+                new OrderActivity(ActivityType.PICKED_UP, "A", "10:20"),
+                new OrderActivity(ActivityType.ORDER_ARRIVED_AT_PICKUP, "B", "10:30"),
+                new OrderActivity(ActivityType.PICKED_UP, "B", "10:35"),
+                new OrderActivity(ActivityType.ORDER_FULFILLED, "A", "10:40"),
+                new OrderActivity(ActivityType.ORDER_FULFILLED, "B", "10:50")
         );
 
         List<PaymentRule> paymentRules = List.of(new BasePaymentRule());
         PaymentCalculator calculator = new PaymentCalculator(paymentRules);
+
         BigDecimal finalPayment = calculator.finalPayment(activities);
         System.out.println("Final Payment: "+ finalPayment);
     }
