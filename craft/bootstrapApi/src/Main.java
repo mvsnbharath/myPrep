@@ -71,11 +71,10 @@ public class Main {
     //    This is the core method the interviewer cares about.
     // ─────────────────────────────────────────────
     static Map<String, Object> resilientCall(
-            String name, String cacheKey, CircuitBreaker cb, Callable<Map<String, Object>> call) {
+            String cacheKey, CircuitBreaker cb, Callable<Map<String, Object>> call) {
 
         // Step 1: Circuit breaker gate
         if (!cb.allowRequest()) {
-            System.out.println("  [" + name + "] circuit OPEN → cache fallback");
             return cache.get(cacheKey);  // may be null
         }
 
@@ -88,7 +87,6 @@ public class Main {
                 cache.put(cacheKey, result);  // write-through cache
                 return result;
             } catch (Exception e) {
-                lastErr = e;
                 if (attempt < 2) {
                     try { Thread.sleep(100L * attempt); } catch (InterruptedException ignored) {}
                 }
@@ -97,7 +95,6 @@ public class Main {
 
         // Step 3: All retries failed → cache fallback
         cb.recordFailure();
-        System.out.println("  [" + name + "] retries exhausted: " + lastErr.getMessage() + " → cache fallback");
         return cache.get(cacheKey);  // may be null — that's a total failure for this service
     }
 
@@ -120,7 +117,7 @@ public class Main {
                                          Callable<Map<String, Object>> addressSvc) {
 
         // Phase 1: User (sequential — need consumer_id for next calls)
-        Map<String, Object> user = resilientCall("user", "user:" + userId, userCB, userSvc);
+        Map<String, Object> user = resilientCall( "user:" + userId, userCB, userSvc);
 
         if (user == null) {
             // User totally unavailable + no cache → return 503
@@ -131,9 +128,9 @@ public class Main {
 
         // Phase 2: Payment + Address in PARALLEL (they're independent)
         Future<Map<String, Object>> paymentF = pool.submit(() ->
-                resilientCall("payment", "pay:" + consumerId, paymentCB, paymentSvc));
+                resilientCall( "pay:" + consumerId, paymentCB, paymentSvc));
         Future<Map<String, Object>> addressF = pool.submit(() ->
-                resilientCall("address", "addr:" + consumerId, addressCB, addressSvc));
+                resilientCall( "addr:" + consumerId, addressCB, addressSvc));
 
         // Phase 3: Fan-in with per-service timeout (500ms)
         Map<String, Object> payment = getWithTimeout(paymentF, 500);
