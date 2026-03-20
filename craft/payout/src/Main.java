@@ -18,6 +18,8 @@ class OrderActivity{
 
 enum ActivityType {
     ORDER_ACCEPTED,
+    ORDER_ARRIVED_AT_PICKUP,
+    PICKED_UP,
     ORDER_FULFILLED
 }
 
@@ -32,8 +34,12 @@ public class Main {
         List<OrderActivity> activities = List.of(
                 new OrderActivity(ActivityType.ORDER_ACCEPTED, "A", "10:00"),
                 new OrderActivity(ActivityType.ORDER_ACCEPTED, "B", "10:10"),
-                new OrderActivity(ActivityType.ORDER_FULFILLED, "A", "10:20"),
-                new OrderActivity(ActivityType.ORDER_FULFILLED, "B", "10:30")
+                new OrderActivity(ActivityType.ORDER_ARRIVED_AT_PICKUP, "A", "10:15"),
+                new OrderActivity(ActivityType.PICKED_UP, "A", "10:20"),
+                new OrderActivity(ActivityType.ORDER_ARRIVED_AT_PICKUP, "B", "10:30"),
+                new OrderActivity(ActivityType.PICKED_UP, "B", "10:35"),
+                new OrderActivity(ActivityType.ORDER_FULFILLED, "A", "10:40"),
+                new OrderActivity(ActivityType.ORDER_FULFILLED, "B", "10:50")
         );
 
         float finalPayment = new Main().finalPayment(activities);
@@ -43,7 +49,10 @@ public class Main {
 
     public float finalPayment(List<OrderActivity> activities) {
         float total = 0.0f;
+
         HashSet<String> activeOrders = new HashSet<>();
+        HashSet<String> atStoreOrders = new HashSet<>();
+
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -55,11 +64,17 @@ public class Main {
                 LocalTime prevTime = LocalTime.parse(activities.get(i-1).datetime, formatter);
                 LocalTime currTime = LocalTime.parse(activities.get(i).datetime, formatter);
                 long minutes = Duration.between(prevTime, currTime).toMinutes();
-                total += (BASE_PAY * activeOrders.size() * minutes);
+                int ongoingOrders =  Math.max(1,activeOrders.size() - atStoreOrders.size());
+                float temp = BASE_PAY * ongoingOrders * minutes;
+                total += temp;
             }
 
             if(type == ActivityType.ORDER_ACCEPTED){
                 activeOrders.add(orderId);
+            }else if(type == ActivityType.ORDER_ARRIVED_AT_PICKUP){
+                atStoreOrders.add(orderId);
+            } else if(type == ActivityType.PICKED_UP){
+                atStoreOrders.remove(orderId);
             }else{
                 activeOrders.remove(orderId);
             }
