@@ -1,25 +1,46 @@
 /.vs
 /Sketch/bin
 /Sketch/obj
+*.xml
+*.iml
 
+# IDE
+.idea/
+.vscode/
 
-# Javaa IDE & build artifacts
+# Java build artifacts
 *.class
-/Javaa/.idea/
-/Javaa/.vscode/
-/Javaa/out/
-/Javaa/bin/
-/Javaa/.kotlin/
-/Javaa/.classpath
-/Javaa/.factorypath
-/Javaa/.project
-/Javaa/.settings/
-/Javaa/.springBeans
-/Javaa/.sts4-cache
-/Javaa/.apt_generated
-/Javaa/.DS_Store
-/Javaa/nbproject/private/
-/Javaa/nbbuild/
-/Javaa/dist/
-/Javaa/nbdist/
-/Javaa/.nb-gradle/
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Kotlin
+.kotlin/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# JetBrains internal
+shelf/
+queries/
+dataSources/
+httpRequests/
+
+# Mac
+.DS_Store

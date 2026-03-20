@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -12,7 +13,7 @@ public class AtomicBalancer {
 
     public AtomicBalancer(List<String> backends) {
         this.backends = Collections.unmodifiableList(new ArrayList<>(backends));
-        this.unhealthy = new HashSet<>();
+        this.unhealthy = ConcurrentHashMap.newKeySet();
         this.counter = new AtomicInteger(0);
     }
 
@@ -25,7 +26,7 @@ public class AtomicBalancer {
         int start = counter.incrementAndGet();
 
         for (int i = 0; i < n; i++) {
-            int idx = (start + i) % n;
+            int idx = Math.floorMod(start +i-1, n);
             String backend = backends.get(idx);
             if (!unhealthy.contains(backend)) {
                 return backend;

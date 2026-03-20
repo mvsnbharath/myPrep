@@ -50,7 +50,7 @@ public class ConcurrentBalancerTest {
         lb.markUnhealthy("B");
         assertEqual("A", lb.getNext(), "1st call");
         assertEqual("C", lb.getNext(), "2nd call skips B");
-        assertEqual("A", lb.getNext(), "3rd call wraps");
+        assertEqual("C", lb.getNext(), "3rd call — B's slot consumed, C again");
     }
 
     // =========================================================================
