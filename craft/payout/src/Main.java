@@ -169,7 +169,7 @@ class PaymentCalculator {
 
 public class Main {
     public static void main(String[] args) {
-        List<OrderActivity> activities = List.of(
+        List<OrderActivity> activities =  new ArrayList<>(List.of(
                 new OrderActivity(ActivityType.ORDER_ACCEPTED, "A", "10:00"),
                 new OrderActivity(ActivityType.ORDER_ACCEPTED, "B", "10:10"),
                 new OrderActivity(ActivityType.ORDER_ARRIVED_AT_PICKUP, "A", "10:15"),
@@ -178,7 +178,8 @@ public class Main {
                 new OrderActivity(ActivityType.PICKED_UP, "B", "10:30"),
                 new OrderActivity(ActivityType.ORDER_FULFILLED, "A", "10:40"),
                 new OrderActivity(ActivityType.ORDER_FULFILLED, "B", "10:50")
-        );
+        ));
+
 
         List<PeakWindow> peakWindows = List.of(
                 new PeakWindow(LocalTime.parse("10:15"), LocalTime.parse("10:30"))
