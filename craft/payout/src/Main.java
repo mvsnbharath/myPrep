@@ -1,15 +1,54 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.List;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+public class Main {
+
+    private static final float BASE_PAY = 0.5f;
+
+    public static void main(String[] args) {
+        
+
+        List<OrderActivity> activities = List.of(
+            new OrderActivity(ActivityType.ORDER_ACCEPTED, "A", "10:00"),
+            new OrderActivity(ActivityType.ORDER_ACCEPTED, "B", "10:10"),
+            new OrderActivity(ActivityType.ORDER_FULFILLED, "A", "10:20"),
+            new OrderActivity(ActivityType.ORDER_FULFILLED, "B", "10:30")            
+        );
+
+        float finalPayment = new Main().finalPayment(activities);
+        System.out.println("Final Payment: " + finalPayment);
+
         }
-    }
+
+        public float finalPayment(List<OrderActivity> activities) {
+            float total = 0.0f;
+            HashSet<String> activeOrders = new HashSet<>();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            for(int i=0; i<activities.size(); i++){
+                ActivityType type = activities.get(i).activityType;
+                String orderId = activities.get(i).orderId;
+
+                if (i>0){
+                    LocalTime prevTime = LocalTime.parse(activities.get(i-1).datetime, formatter);
+                    LocalTime currTime = LocalTime.parse(activities.get(i).datetime, formatter);
+                    long minutes = Duration.between(prevTime, currTime).toMinutes();
+                    total += (BASE_PAY * activeOrders.size() * minutes);
+                }
+
+                if(type == ActivityType.ORDER_ACCEPTED){
+                        activeOrders.add(orderId);
+                }else{
+                    activeOrders.remove(orderId); 
+                }
+
+                
+            }
+
+            return total;
+        }
 }
