@@ -48,6 +48,7 @@ public class Main {
         OrderTracker() {
             orderMap   = new HashMap<>();
             userTotals = new HashMap<>();
+            userOrders = new HashMap<>();
             // userOrders setup
         }
 
@@ -56,28 +57,65 @@ public class Main {
             orderMap.put(orderId, order);
 
             // update running total for this user
-            userTotals.put(userId, value);
+            if(userTotals.containsKey(userId)){
+                double currentValue = userTotals.get(userId);
+                userTotals.put(userId, currentValue+value);
 
+//                userTotals.compute(userId, (k, v) -> v+ value);
+
+//                userTotals.compute(userId, (k, currentValue) -> currentValue + value);
+            }
+            else{
+                userTotals.put(userId, value);
+            }
+
+            if(userOrders.containsKey(userId)){
+                List<Order> existingOrders = userOrders.get(userId);
+                existingOrders.add(order);
+                userOrders.put(userId, existingOrders);
+            }else{
+                List<Order> orders = new ArrayList<>();
+                orders.add(order);
+                userOrders.put(userId, orders);
+
+            }
             // track order in user's order list
-            List<Order> orders = new ArrayList<>();
-            orders.add(order);
-            userOrders.put(userId, orders);
+
+
+
+
 
             System.out.println("[tracker] created: " + order);
         }
 
         void cancelOrder(String orderId) {
+
+            if(!orderMap.containsKey(orderId)){
+                throw new IllegalArgumentException("inavalid");
+            }
             Order order = orderMap.get(orderId);
             System.out.println("[tracker] cancelling: " + orderId);
 
+
+            double value = order.value;
             order.active = false;
             orderMap.remove(orderId);
+            String userId = order.userId;
+
+            double existingValue = userTotals.get(userId);
+            userTotals.put(userId, existingValue-value);
+
+
 
             System.out.println("[tracker] cancel complete for " + orderId);
         }
 
         double getUserTotal(String userId) {
             System.out.println("[tracker] lookup total for user=" + userId);
+            if(!userTotals.containsKey(userId)){
+                return 0;
+            }
+
             return userTotals.get(userId);
         }
 
